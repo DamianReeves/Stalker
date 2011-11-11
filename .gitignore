@@ -1,0 +1,11 @@
+*.suo
+*.user
+*.vsmdi
+*.vssscc
+*.vspscc
+*.testsettings
+*.trx
+bin/
+obj/
+TestResults/
+_Resharper.*/
