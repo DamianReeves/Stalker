@@ -32,7 +32,6 @@ namespace Stalker.Prey
 			Implement<INotifyPropertyChanged>(
 				propertyChanged
 			);
-
 			// Implement INotifyPropertyChangedAmendment, specifying a method that raises the PropertyChanged event
 			Implement<INotifyPropertyChangedAmendment>(
 				Methods.Raise(propertyChanged, "OnPropertyChanged")
