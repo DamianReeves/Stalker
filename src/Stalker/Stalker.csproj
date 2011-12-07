@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CollectionExtensions.cs" />
+    <Compile Include="NotificationExtensions.cs" />
     <Compile Include="Stalker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
