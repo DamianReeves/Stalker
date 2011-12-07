@@ -14,8 +14,6 @@ using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
 namespace Stalker {
-
-
     public static class NotificationExtensions {
         public static IObservable<EventPattern<PropertyChangedEventArgs>> ToObservable(this INotifyPropertyChanged notifier) {
             var propertyChanged = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
