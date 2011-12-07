@@ -9,6 +9,9 @@ using System.Text;
 
 namespace Stalker {
     public static class Stalker {        
+        public static IStalker Stalk(object target) {
+            throw new NotImplementedException();
+        }
         public static IStalker Stalk<T>(T watched) {
             return new Stalker<T>();
         }

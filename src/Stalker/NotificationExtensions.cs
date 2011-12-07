@@ -9,13 +9,22 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Text;
 namespace Stalker {
-    
-    
+
+
     public static class NotificationExtensions {
+        public static IObservable<EventPattern<PropertyChangedEventArgs>> ToObservable(this INotifyPropertyChanged notifier) {
+            var propertyChanged = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+                handler => (sender, args) => handler(sender, args),
+                x => notifier.PropertyChanged += x,
+                x => notifier.PropertyChanged -= x);
+            return propertyChanged;
+        }
+
         public static IObservable<TProperty> ObservePropertyChanged<TNotifier, TProperty>(this TNotifier notifier,
                                                                                           Expression<Func<TNotifier, TProperty>> propertyAccessor,
                                                                                           bool startWithCurrent = false)
@@ -28,10 +37,7 @@ namespace Stalker {
             // Compile the expression so we can run it to read the property value.
             var reader = propertyAccessor.Compile();
 
-            var propertyChanged = Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
-                handler => (sender, args) => handler(sender, args),
-                x => notifier.PropertyChanged += x,
-                x => notifier.PropertyChanged -= x);
+            var propertyChanged = notifier.ToObservable();
 
             // Filter the events to the correct property name, then select the value of the property from the notifier.
             var newValues = from p in propertyChanged
@@ -44,9 +50,8 @@ namespace Stalker {
         }
 
         public static IObservable<Tuple<TProperty, TProperty>> ObserveValueChanged<TNotifier, TProperty>(this TNotifier notifier,
-                                                                                                         Expression<Func<TNotifier, TProperty>> propertyAccessor,
-                                                                                                         bool startWithCurrent = false)
-            where TNotifier : INotifyPropertyChanged {
+            Expression<Func<TNotifier, TProperty>> propertyAccessor,
+            bool startWithCurrent = false) where TNotifier : INotifyPropertyChanged {
 
             // Compile the expression so we can run it to read the property value.
             var reader = propertyAccessor.Compile();
@@ -58,50 +63,45 @@ namespace Stalker {
                     () => Observable.Return(reader(notifier)).Concat(captured));
             }
             return observable.Scan(default(Tuple<TProperty, TProperty>)
-                                   , (acc, p) => Tuple.Create<TProperty, TProperty>(acc == null ? default(TProperty) : acc.Item2, p));
+                                   , (acc, p) => Tuple.Create(acc == null ? default(TProperty) : acc.Item2, p));
 
         }
 
-        public static IObservable<Tuple<TProperty, TProperty>> ObserveValueChanged2<TNotifier, TProperty>(this TNotifier notifier,
-                                                                                                          Expression<Func<TNotifier, TProperty>> propertyAccessor,
-                                                                                                          bool startWithCurrent = false)
-            where TNotifier : INotifyPropertyChanged {
+        public static IObservable<IChangeNotification<object, TProperty>> ObserveChanges<TNotifier, TProperty>(TNotifier notifier
+            , Expression<Func<TNotifier, TProperty>> propertyAccessor
+            , bool startWithCurrent = false) where TNotifier : INotifyPropertyChanged {
 
+            var propertyName = propertyAccessor.GetMemberInfo().Name;
             // Compile the expression so we can run it to read the property value.
             var reader = propertyAccessor.Compile();
 
-            var newValues = ObservePropertyChanged(notifier, propertyAccessor, false);
+            var eventStream =
+                from evt in notifier.ToObservable()
+                where evt.EventArgs.PropertyName == propertyName
+                select new ChangeNotification<object,TProperty>{
+                    PropertyName = propertyName, 
+                    Sender = evt.Sender,
+                    Value = reader(notifier)
+                };
+
             if (startWithCurrent) {
-                var capturedNewValues = newValues; //To prevent warning about modified closure
-                newValues = Observable.Defer(() => Observable.Return(reader(notifier))
-                                                       .Concat(capturedNewValues));
+                var values = eventStream;
+                var initial = new ChangeNotification<TProperty> {
+                    Sender = notifier,
+                    PropertyName = propertyName,
+                    Value = reader(notifier)
+                };
+                eventStream = Observable.Defer(() => Observable.Return(initial)).Concat(values);
             }
+            return eventStream.Scan(default(IChangeNotification<object,TProperty>)
+                , (acc, notification) =>(IChangeNotification<object,TProperty>) 
+                    new ValueChangedNotification<object, TProperty>{
+                        PropertyName = notification.PropertyName,
+                        Sender = notification.Sender,
+                        Value = notification.Value,
+                        OldValue = acc == null? default(TProperty) :acc.Value
+                    });
 
-            return Observable.Create<Tuple<TProperty, TProperty>>(obs => {
-                                                                      Tuple<TProperty, TProperty> oldNew = null;
-                                                                      return newValues.Subscribe(v => {
-                                                                                                     if (oldNew == null) {
-                                                                                                         oldNew = Tuple.Create<TProperty, TProperty>(default(TProperty), v);
-                                                                                                     } else {
-                                                                                                         oldNew = Tuple.Create<TProperty, TProperty>(oldNew.Item2, v);
-                                                                                                         obs.OnNext(oldNew);
-                                                                                                     }
-                                                                                                 },
-                                                                                                 obs.OnError,
-                                                                                                 obs.OnCompleted);
-                                                                  });
         }
-
-        public static MemberInfo GetMemberInfo(this Expression expression) {
-            var lambda = (LambdaExpression)expression;
-
-            MemberExpression memberExpression;
-            if (lambda.Body is UnaryExpression) {
-                var unaryExpression = (UnaryExpression)lambda.Body;
-                memberExpression = (MemberExpression)unaryExpression.Operand;
-            } else memberExpression = (MemberExpression)lambda.Body;
-
-            return memberExpression.Member;
-        }
-    }
+    }    
 }

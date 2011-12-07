@@ -55,28 +55,5 @@ namespace Stalker {
                 return ObserveCollectionChanged((INotifyCollectionChanged)collectionView);
             }
 #endif
-    }
-
-    [Flags]
-    public enum ChangeType {
-        None = 0,
-        ValueChanged = 1,
-        IsReadOnly = 2,
-        ItemAdded = 4,
-        ItemRemoved = 8,
-        ItemReplaced = ItemRemoved | ItemAdded,
-        CollectionReset = 16,
-    }
-
-    public interface IChangeNotification<out TSender, out TValue> {
-        TSender Sender { get; }
-        TValue Value { get; }
-        string PropertyName { get; }
-    }
-
-    public class ChangeNotification<TSender,TValue>: IChangeNotification<TSender,TValue> {
-        public TSender Sender { get; set; }
-        public TValue Value { get; set; }
-        public string PropertyName { get; set; }
-    }
+    }    
 }

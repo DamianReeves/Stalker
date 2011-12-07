@@ -44,7 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangeNotification.cs" />
     <Compile Include="CollectionExtensions.cs" />
+    <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="NotificationExtensions.cs" />
     <Compile Include="Stalker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
