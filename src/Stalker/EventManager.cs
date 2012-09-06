@@ -3,7 +3,7 @@ using System;
 namespace Stalker {
     public static class EventManager {
         //This overload handles any type of EventHandler
-        public static IDisposable Subscribe<TSubscriber, TDelegate, TEventArgs>(
+        public static IDisposable SubscribeTo<TSubscriber, TDelegate, TEventArgs>(
             Func<EventHandler<TEventArgs>, TDelegate> converter,
             Action<TDelegate> add, Action<TDelegate> remove,
             TSubscriber subscriber, Action<TSubscriber, TEventArgs> action)
@@ -27,12 +27,12 @@ namespace Stalker {
         }
 
         // this overload is simplified for generic EventHandlers
-        public static IDisposable Subscribe<TSubscriber, TArgs>(
+        public static IDisposable SubscribeTo<TSubscriber, TArgs>(
             Action<EventHandler<TArgs>> add, Action<EventHandler<TArgs>> remove,
             TSubscriber subscriber, Action<TSubscriber, TArgs> action)
             where TArgs : EventArgs
             where TSubscriber : class {
-            return Subscribe<TSubscriber, EventHandler<TArgs>, TArgs>(
+            return SubscribeTo<TSubscriber, EventHandler<TArgs>, TArgs>(
                 h => h, add, remove, subscriber, action);
         }
     }
