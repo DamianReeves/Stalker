@@ -1,46 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Text;
+﻿namespace Stalker {
+    using System.Runtime.CompilerServices;
 
-namespace Stalker {
-    public static class Stalker {        
-        public static IStalker Stalk(object target) {
-            throw new NotImplementedException();
-        }
-        public static IStalker Stalk<T>(T watched) {
-            return new Stalker<T>();
-        }
+    public class Stalker: IStalker {
+        readonly ConditionalWeakTable<object, TrackedItem> _trackedTargets = new ConditionalWeakTable<object, TrackedItem>(); 
 
-        private static void Stalk(INotifyCollectionChanged collection) {            
+
+        public void Watch(object target) {
+            _trackedTargets.GetOrCreateValue(target);
             
-        }        
-    }
-
-    internal class Stalker<T> : IStalker {
-        private readonly CompositeDisposable _disposable = new CompositeDisposable();
-        public void Stalk(INotifyCollectionChanged collection) {
-
         }
 
-        public IStalker Watch<TResult>(Expression<Func<T,TResult>> propertyExpression) {
-            throw new NotImplementedException();
-        }
-
-        public void Dispose() {
-            if (!_disposable.IsDisposed) {
-                _disposable.Dispose();
-            }
+        public IWatcher AddWatcher(IWatcher watcher) {
+            throw new System.NotImplementedException();
         }
     }
 
-    public interface IStalker: IDisposable {
-        
+    public interface IStalker {
+        void Watch(object target);
+        IWatcher AddWatcher(IWatcher watcher);
     }
-
-    
 }

@@ -1,12 +1,11 @@
-﻿using System;
+﻿using ReactiveUI;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Stalker.Prey;
 
 namespace AddressBook {
-    [NotifyPropertyChanged]
-    public class Address {
+    public class Address: ReactiveObject {
         public string Street1 { get; set; }
         public string Street2 { get; set; }
         public string City { get; set; }

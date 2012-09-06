@@ -69,10 +69,6 @@
       <Project>{b4c4e65a-c94e-4538-9435-dd9ac47b1a9d}</Project>
       <Name>AddressBook</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Stalker.Prey\Stalker.Prey.csproj">
-      <Project>{f3726c74-08d6-409e-9279-8d90ca05bf38}</Project>
-      <Name>Stalker.Prey</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />

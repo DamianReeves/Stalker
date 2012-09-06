@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Stalker.Prey;
+﻿using System.Collections.Generic;
+using ReactiveUI;
 
 namespace AddressBook {
-    [NotifyPropertyChanged]
-    public class Person {
+    public class Person: ReactiveObject {
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public IList<Address> Addresses { get; set; }
